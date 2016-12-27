@@ -7,6 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/FoxComm/gizmo/common/logging"
 	"github.com/FoxComm/gizmo/models"
 )
 
@@ -28,19 +29,17 @@ func EncodeSimple(simple models.SimpleObject) (*models.IlluminatedObject, error)
 		Attributes: map[string]models.IlluminatedAttribute{},
 	}
 
-	fmt.Printf("Name: %s\n", st.Name())
-
-	fmt.Println("Public Fields")
-	fmt.Println("-------------")
+	logging.Debugf("Name of the type to encode %s", st.Name())
+	logging.Debugln("Discovered public fields:")
 
 	for i := 0; i < val.NumField(); i++ {
 		field := st.Field(i)
 		sv := val.Field(i)
 
 		if isPublic(field.Name) {
-			fmt.Printf("Name: %s\n", fieldName(field))
-			fmt.Printf("Type: %s\n", typeName(field))
-			fmt.Printf("Value: %v\n", sv.Interface())
+			logging.Debugf("Name: %s", fieldName(field))
+			logging.Debugf("Type: %s", typeName(field))
+			logging.Debugf("Value: %v", sv.Interface())
 
 			attribute := models.IlluminatedAttribute{
 				Type:  typeName(field),
