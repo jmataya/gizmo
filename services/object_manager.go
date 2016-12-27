@@ -1,33 +1,28 @@
 package services
 
-//type ObjectManager struct{}
+import (
+	"fmt"
 
-//func (om ObjectManager) Create(illuminated IlluminatedObject) error {
-//form := models.ObjectForm{Kind: illuminated.Kind}
-//shadow := models.ObjectShadow{}
+	"github.com/FoxComm/gizmo/models"
+)
 
-//hasher := sha1.New()
+type ObjectManager struct{}
 
-//for name, attribute := range illuminated.Attributes {
-//var bytes []byte
+func (om ObjectManager) Create(illuminated *models.IlluminatedObject) error {
+	form := models.NewObjectForm(illuminated.Kind)
+	shadow := models.NewObjectShadow()
 
-//switch attribute {
-//case "string":
-//attrStr := attribute.Value.(string)
-//bytes = []bytes(attrStr)
-//case "integer":
-//attrInt := attribute.Value.(int)
-//bytes = []bytes(strconv.Itoa(attrDec)
-//case "decimal":
-//attrDec := attribute.Value.(float64)
-//bytes = []bytes(fmt.Sprintf("%d", attrDec))
-//default:
-//bytes, err := json.Marshal(attribute.Value)
-//if err != nil {
-//return err
-//}
-//}
-//}
+	for name, attribute := range illuminated.Attributes {
+		ref, err := form.AddAttribute(attribute.Value)
+		if err != nil {
+			return err
+		}
 
-//return nil
-//}
+		shadow.AddAttribute(name, attribute.Type, ref)
+	}
+
+	fmt.Printf("Form: %v\n", form)
+	fmt.Printf("Shadow: %v\n", shadow)
+
+	return nil
+}

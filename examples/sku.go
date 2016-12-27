@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/FoxComm/gizmo/illuminate"
+	"github.com/FoxComm/gizmo/services"
 )
 
 type Money struct {
@@ -46,4 +47,9 @@ func main() {
 	}
 
 	fmt.Printf("%v\n", body)
+
+	om := services.ObjectManager{}
+	if err := om.Create(illuminated); err != nil {
+		log.Fatal(err)
+	}
 }
