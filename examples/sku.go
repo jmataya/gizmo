@@ -2,12 +2,15 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/FoxComm/gizmo/illuminate"
+	"github.com/FoxComm/gizmo/models"
 	"github.com/FoxComm/gizmo/services"
+	_ "github.com/lib/pq"
 )
 
 type Money struct {
@@ -31,7 +34,16 @@ func (s *SKU) SetIdentifier(id uint) {
 }
 
 func main() {
-	fmt.Println("More butter, more cream")
+	db, err := sql.Open("postgres", "user=jeff dbname=gizmo sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	om, _ := services.NewObjectManager(db)
+	context, err := models.ObjectContext{Name: "default"}.Insert(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	m := Money{199, "USD"}
 	s := SKU{1, "Test SKU", 14, m}
@@ -41,6 +53,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	illuminated.ContextID = context.ID
+
 	body := new(bytes.Buffer)
 	if err := json.NewEncoder(body).Encode(illuminated); err != nil {
 		log.Fatal(err)
@@ -48,8 +62,7 @@ func main() {
 
 	fmt.Printf("%v\n", body)
 
-	om := services.ObjectManager{}
-	if err := om.Create(illuminated); err != nil {
+	if _, err := om.Create(illuminated); err != nil {
 		log.Fatal(err)
 	}
 }

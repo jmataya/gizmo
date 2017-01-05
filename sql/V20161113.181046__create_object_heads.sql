@@ -5,7 +5,7 @@ create table object_heads (
 
   created_at generic_timestamp,
   updated_at generic_timestamp,
-  archived_at generic_timestamp,
+  archived_at generic_timestamp_null,
 
   foreign key (context_id) references object_contexts(id) on update restrict on delete restrict,
   foreign key (commit_id) references object_commits(id) on update restrict on delete restrict
