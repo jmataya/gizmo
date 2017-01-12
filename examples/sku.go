@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/FoxComm/gizmo/illuminate"
 	"github.com/FoxComm/gizmo/models"
 	"github.com/FoxComm/gizmo/services"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 type Money struct {
@@ -34,7 +34,7 @@ func (s *SKU) SetIdentifier(id uint) {
 }
 
 func main() {
-	db, err := sql.Open("postgres", "user=jeff dbname=gizmo sslmode=disable")
+	db, err := sql.Open("postgres", "user=gizmo dbname=gizmo sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,14 +3,14 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
-
+	
 	"github.com/FoxComm/gizmo/models"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	db, err := sql.Open("postgres", "user=jeff dbname=gizmo sslmode=disable")
+	db, err := sql.Open("postgres", "user=gizmo dbname=gizmo sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

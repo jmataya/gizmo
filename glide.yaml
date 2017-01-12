@@ -1,0 +1,5 @@
+package: github.com/FoxComm/gizmo
+import:
+- package: github.com/lib/pq
+- package: github.com/sirupsen/logrus
+  version: ^0.11.0
