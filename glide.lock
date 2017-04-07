@@ -1,14 +1,15 @@
-hash: efe507edffcf28451681143d91e163e77d66d51e7bff82252e1b72785f200850
-updated: 2017-01-12T12:03:44.431188741+03:00
+hash: cfc4947259cc81229cb2b7b9e8804762becb02d4192951c28ead2368c31c2b12
+updated: 2017-04-06T17:10:25.387809692-07:00
 imports:
 - name: github.com/lib/pq
-  version: 8df6253d1317616f36b0c3740eb30c239a7372cb
+  version: 55196ec83d60d789e27b2627549bf00974a70084
   subpackages:
   - oid
 - name: github.com/sirupsen/logrus
-  version: d26492970760ca5d33129d2d799e34be5c4782eb
+  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+  repo: git@github.com:sirupsen/logrus.git
 - name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
   subpackages:
   - unix
 testImports: []

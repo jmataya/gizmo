@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 
 	"github.com/FoxComm/gizmo/illuminate"
 	"github.com/FoxComm/gizmo/models"
@@ -21,8 +20,8 @@ type Money struct {
 type SKU struct {
 	id       uint
 	Title    string `json:"title"`
-	Number   int32  `json:"number"`
-	UnitCost Money  `json:"unitCost"`
+	Number   int    `json:"number"`
+	UnitCost *Money `json:"unitCost"`
 }
 
 func (s *SKU) Identifier() uint {
@@ -34,6 +33,8 @@ func (s *SKU) SetIdentifier(id uint) {
 }
 
 func main() {
+	// log.SetLevel(log.DebugLevel)
+
 	db, err := sql.Open("postgres", "user=gizmo dbname=gizmo sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +46,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	m := Money{199, "USD"}
+	m := &Money{199, "USD"}
 	s := SKU{1, "Test SKU", 14, m}
 
 	illuminated, err := illuminate.EncodeSimple(&s)
@@ -60,9 +61,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%v\n", body)
-
-	if _, err := om.Create(illuminated); err != nil {
+	created, err := om.Create(illuminated)
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("Created %v", created)
+
+	createdSku := SKU{}
+	if err := illuminate.Decode(created, &createdSku); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("SKU Title = %s, Number = %d, UnitCost = %v", createdSku.Title, createdSku.Number, createdSku.UnitCost)
 }
