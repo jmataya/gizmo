@@ -17,7 +17,7 @@ type ObjectCommit struct {
 	ID         uint
 	FormID     uint
 	ShadowID   uint
-	PreviousID uint
+	PreviousID sql.NullInt64
 	CreatedAt  time.Time
 }
 
