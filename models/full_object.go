@@ -14,6 +14,13 @@ const (
     INNER JOIN object_shadows AS s ON c.shadow_id = s.id
     WHERE c.form_id = $1 AND h.context_id = $2
   `
+
+	sqlSelectFullObjectByCommit = `
+		SELECT f.*, s.*, c.* FROM object_commits AS c
+		INNER JOIN object_forms AS f ON c.form_id = f.id
+		INNER JOIN object_shadows AS s ON c.shadow_id = s.id
+		WHERE c.id = $1
+	`
 )
 
 // FullObject is a convenience structure that aggregrates the main components
@@ -26,13 +33,28 @@ type FullObject struct {
 
 // FindLatest retrieves the most recent FullObject in a given view.
 func (f FullObject) FindLatest(db *sql.DB, id uint, viewID uint) (FullObject, error) {
-	var found FullObject
-
 	if id == 0 {
-		return found, fmt.Errorf(errFieldMustBeGreaterThanZero, "id")
+		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "id")
 	} else if viewID == 0 {
-		return found, fmt.Errorf(errFieldMustBeGreaterThanZero, "viewID")
+		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "viewID")
 	}
+
+	row := db.QueryRow(sqlSelectFullObjectLatest, id, viewID)
+	return f.findRow(row)
+}
+
+// FindByCommit retrieves a FullObject at a specific commit.
+func (f FullObject) FindByCommit(db *sql.DB, commitID uint) (FullObject, error) {
+	if commitID == 0 {
+		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "commitID")
+	}
+
+	row := db.QueryRow(sqlSelectFullObjectByCommit, commitID)
+	return f.findRow(row)
+}
+
+func (f FullObject) findRow(row *sql.Row) (FullObject, error) {
+	var found FullObject
 
 	var formID uint
 	var formKind string
@@ -49,7 +71,6 @@ func (f FullObject) FindLatest(db *sql.DB, id uint, viewID uint) (FullObject, er
 	var commitPreviousID sql.NullInt64
 	var commitCreatedAt time.Time
 
-	row := db.QueryRow(sqlSelectFullObjectLatest, id, viewID)
 	err := row.Scan(&formID, &formKind, &formAttributes, &formCreatedAt, &formUpdatedAt,
 		&shadowID, &shadowFormID, &shadowAttributes, &shadowCreatedAt,
 		&commitID, &commitFormID, &commitShadowID, &commitPreviousID, &commitCreatedAt)
