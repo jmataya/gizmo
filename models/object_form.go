@@ -3,11 +3,12 @@ package models
 import (
 	"bytes"
 	"crypto/sha1"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/FoxComm/gizmo/common"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 // collection of attributes. The key of each attribute is a hash of the
 // attribute's value.
 type ObjectForm struct {
-	ID         uint
+	ID         int64
 	Kind       string
 	Attributes ObjectFormAttributes
 	CreatedAt  time.Time
@@ -62,7 +63,7 @@ func (form ObjectForm) Validate() error {
 
 // Insert adds the ObjectForm to the database and returns a copy of the
 // ObjectForm with values that were inserted.
-func (form ObjectForm) Insert(db *sql.DB) (ObjectForm, error) {
+func (form ObjectForm) Insert(db common.DB) (ObjectForm, error) {
 	var newForm ObjectForm
 
 	if err := form.Validate(); err != nil {
@@ -78,7 +79,7 @@ func (form ObjectForm) Insert(db *sql.DB) (ObjectForm, error) {
 		return newForm, err
 	}
 
-	var id uint
+	var id int64
 	var kind string
 	var attributes ObjectFormAttributes
 	var createdAt time.Time

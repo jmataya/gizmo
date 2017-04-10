@@ -60,7 +60,7 @@ func createObjectCommit(t *testing.T, db *sql.DB, form ObjectForm, shadow Object
 	return inserted
 }
 
-func createObjectContext(t *testing.T, db *sql.DB) ObjectContext {
+func CreateObjectContext(t *testing.T, db *sql.DB) ObjectContext {
 	context := ObjectContext{Name: "Default"}
 
 	inserted, err := context.Insert(db)

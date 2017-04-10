@@ -13,9 +13,9 @@ const (
 
 // ObjectHead is a pointer to the most up-to-date commit of a given object.
 type ObjectHead struct {
-	ID         uint
-	ContextID  uint
-	CommitID   uint
+	ID         int64
+	ContextID  int64
+	CommitID   int64
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	ArchivedAt *time.Time
@@ -51,9 +51,9 @@ func (head ObjectHead) Insert(db *sql.DB) (ObjectHead, error) {
 		return newHead, err
 	}
 
-	var id uint
-	var contextID uint
-	var commitID uint
+	var id int64
+	var contextID int64
+	var commitID int64
 	var createdAt time.Time
 	var updatedAt time.Time
 	var archivedAt *time.Time

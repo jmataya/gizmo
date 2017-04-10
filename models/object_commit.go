@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/FoxComm/gizmo/common"
 )
 
 const (
@@ -14,9 +16,9 @@ const (
 // ObjectCommit represents an update to an object. It is an immutable object in
 // the database and contains a reference to the commit that came before it.
 type ObjectCommit struct {
-	ID         uint
-	FormID     uint
-	ShadowID   uint
+	ID         int64
+	FormID     int64
+	ShadowID   int64
 	PreviousID sql.NullInt64
 	CreatedAt  time.Time
 }
@@ -35,7 +37,7 @@ func (commit ObjectCommit) Validate() error {
 
 // Insert adds the ObjectCommit to the database and returns a copy of the
 // ObjectCommits with values that were inserted.
-func (commit ObjectCommit) Insert(db *sql.DB) (ObjectCommit, error) {
+func (commit ObjectCommit) Insert(db common.DB) (ObjectCommit, error) {
 	var newCommit ObjectCommit
 
 	if err := commit.Validate(); err != nil {
@@ -51,9 +53,9 @@ func (commit ObjectCommit) Insert(db *sql.DB) (ObjectCommit, error) {
 		return newCommit, err
 	}
 
-	var id uint
-	var formID uint
-	var shadowID uint
+	var id int64
+	var formID int64
+	var shadowID int64
 	var createdAt time.Time
 
 	row := stmt.QueryRow(commit.FormID, commit.ShadowID)

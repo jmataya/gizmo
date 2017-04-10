@@ -14,7 +14,7 @@ const (
 // ObjectContext is an object that is used to define which ObjectShadow to use
 // for an object.
 type ObjectContext struct {
-	ID         uint
+	ID         int64
 	Name       string
 	Attributes ObjectContextAttributes
 	CreatedAt  time.Time
@@ -49,7 +49,7 @@ func (context ObjectContext) Insert(db *sql.DB) (ObjectContext, error) {
 		return newContext, err
 	}
 
-	var id uint
+	var id int64
 	var name string
 	var attributes ObjectContextAttributes
 	var createdAt time.Time

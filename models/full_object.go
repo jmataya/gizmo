@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	"github.com/FoxComm/gizmo/common"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -32,7 +35,7 @@ type FullObject struct {
 }
 
 // FindLatest retrieves the most recent FullObject in a given view.
-func (f FullObject) FindLatest(db *sql.DB, id uint, viewID uint) (FullObject, error) {
+func (f FullObject) FindLatest(db *sql.DB, id int64, viewID int64) (FullObject, error) {
 	if id == 0 {
 		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "id")
 	} else if viewID == 0 {
@@ -44,7 +47,7 @@ func (f FullObject) FindLatest(db *sql.DB, id uint, viewID uint) (FullObject, er
 }
 
 // FindByCommit retrieves a FullObject at a specific commit.
-func (f FullObject) FindByCommit(db *sql.DB, commitID uint) (FullObject, error) {
+func (f FullObject) FindByCommit(db *sql.DB, commitID int64) (FullObject, error) {
 	if commitID == 0 {
 		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "commitID")
 	}
@@ -53,21 +56,62 @@ func (f FullObject) FindByCommit(db *sql.DB, commitID uint) (FullObject, error) 
 	return f.findRow(row)
 }
 
+// Insert adds the FullObject to the database.
+func (f FullObject) Insert(db common.DB) (FullObject, error) {
+	if f.Form.ID != 0 {
+		return f, fmt.Errorf(errFieldMustBeZero, "Form.ID")
+	} else if f.Shadow.ID != 0 {
+		return f, fmt.Errorf(errFieldMustBeZero, "Shadow.ID")
+	} else if f.Commit.ID != 0 {
+		return f, fmt.Errorf(errFieldMustBeZero, "Shadow.ID")
+	}
+
+	log.Debugln("Inserting Form")
+	newForm, err := f.Form.Insert(db)
+	if err != nil {
+		return f, err
+	}
+	log.Debugf("Inserted Form with ID=%d", newForm.ID)
+
+	log.Debugln("Inserting Shadow")
+	f.Shadow.FormID = newForm.ID
+	newShadow, err := f.Shadow.Insert(db)
+	if err != nil {
+		return f, err
+	}
+	log.Debugf("Inserted Shadow with ID=%d", newShadow.ID)
+
+	log.Debugln("Inserting Commit")
+	f.Commit.FormID = newForm.ID
+	f.Commit.ShadowID = newShadow.ID
+	newCommit, err := f.Commit.Insert(db)
+	if err != nil {
+		return f, err
+	}
+	log.Debugf("Inserted Commit with ID=%d", newCommit.ID)
+
+	return FullObject{
+		Form:   newForm,
+		Shadow: newShadow,
+		Commit: newCommit,
+	}, nil
+}
+
 func (f FullObject) findRow(row *sql.Row) (FullObject, error) {
 	var found FullObject
 
-	var formID uint
+	var formID int64
 	var formKind string
 	var formAttributes ObjectFormAttributes
 	var formCreatedAt time.Time
 	var formUpdatedAt time.Time
-	var shadowID uint
-	var shadowFormID uint
+	var shadowID int64
+	var shadowFormID int64
 	var shadowAttributes ObjectShadowAttributes
 	var shadowCreatedAt time.Time
-	var commitID uint
-	var commitFormID uint
-	var commitShadowID uint
+	var commitID int64
+	var commitFormID int64
+	var commitShadowID int64
 	var commitPreviousID sql.NullInt64
 	var commitCreatedAt time.Time
 

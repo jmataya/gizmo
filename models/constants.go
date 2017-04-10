@@ -6,6 +6,8 @@ const (
 
 	// Query error messages.
 	errFieldMustBeGreaterThanZero = "%s must be greater than zero"
+	errFieldMustBeZero            = "%s must be zero"
+	errFieldMustBeNonEmpty        = "%s must be non-empty"
 
 	// ObjectForm error messages.
 	errObjectFormMustHaveKind = "ObjectForm must have a kind"

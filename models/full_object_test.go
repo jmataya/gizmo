@@ -12,7 +12,7 @@ func TestFindLatest_Basic(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := createObjectContext(t, db)
+	context := CreateObjectContext(t, db)
 	fullObject := createFullObject(t, db, context)
 	head := createObjectHead(t, db, context, fullObject.Commit)
 
@@ -32,7 +32,7 @@ func TestFindByCommit_Basic(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := createObjectContext(t, db)
+	context := CreateObjectContext(t, db)
 	fullObject := createFullObject(t, db, context)
 
 	latest, err := fullObject.FindByCommit(db, fullObject.Commit.ID)

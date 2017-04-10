@@ -1,10 +1,11 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/FoxComm/gizmo/common"
 )
 
 const (
@@ -15,8 +16,8 @@ const (
 // database that defines which attributes should be visible on the illuminated
 // object.
 type ObjectShadow struct {
-	ID         uint
-	FormID     uint
+	ID         int64
+	FormID     int64
 	Attributes ObjectShadowAttributes
 	CreatedAt  time.Time
 }
@@ -29,9 +30,18 @@ func NewObjectShadow() *ObjectShadow {
 }
 
 // AddAttribute adds an attribute to the ObjectShadow.
-func (shadow *ObjectShadow) AddAttribute(attrName, attrType, attrRef string) {
+func (shadow *ObjectShadow) AddAttribute(attrName, attrType, attrRef string) error {
+	if attrName == "" {
+		return fmt.Errorf(errFieldMustBeNonEmpty, "attrName")
+	} else if attrType == "" {
+		return fmt.Errorf(errFieldMustBeNonEmpty, "attrType")
+	} else if attrRef == "" {
+		return fmt.Errorf(errFieldMustBeNonEmpty, "attrRef")
+	}
+
 	attr := attribute{Type: attrType, Ref: attrRef}
 	shadow.Attributes[attrName] = attr
+	return nil
 }
 
 // Validate checks the properties on the ObjectShadow and determines if they
@@ -46,7 +56,7 @@ func (shadow ObjectShadow) Validate() error {
 
 // Insert adds the ObjectShadow to the database and returns a copy of the
 // ObjectShadow with the values that were inserted.
-func (shadow ObjectShadow) Insert(db *sql.DB) (ObjectShadow, error) {
+func (shadow ObjectShadow) Insert(db common.DB) (ObjectShadow, error) {
 	var newShadow ObjectShadow
 
 	if err := shadow.Validate(); err != nil {
@@ -62,8 +72,8 @@ func (shadow ObjectShadow) Insert(db *sql.DB) (ObjectShadow, error) {
 		return newShadow, err
 	}
 
-	var id uint
-	var formID uint
+	var id int64
+	var formID int64
 	var attributes ObjectShadowAttributes
 	var createdAt time.Time
 
