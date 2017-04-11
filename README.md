@@ -25,11 +25,11 @@ situations and is automatically versioned on every change.
     import "github.com/FoxComm/gizmo"
     ```
 
-1. Add `gizmo.ContentObject` to the struct you want to save:
+1. Add `gizmo.EntityObject` to the struct you want to save:
 
     ```go
     type Product struct {
-      gizmo.ContentObject
+      gizmo.EntityObject
 
       Title       string
       Description string
@@ -47,7 +47,7 @@ situations and is automatically versioned on every change.
     mgr, err := gizmo.NewManager(dbHost, dbName, dbUser, dbPassword)
     ```
 
-1. Save a struct implementing `ContentObject` using `Manager`:
+1. Save a struct implementing `EntityObject` using `Manager`:
 
     ```go
     p := Product{
@@ -56,7 +56,7 @@ situations and is automatically versioned on every change.
     }
 
     viewID := 1
-    saved, err := mgr.Save(p, viewID)
+    saved, err := mgr.Create(p, viewID)
     ```
 
 1. Retrieve the struct based on it's ID and view ID:

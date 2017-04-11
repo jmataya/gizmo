@@ -10,14 +10,6 @@ import (
 )
 
 const (
-	sqlSelectFullObjectLatest = `
-    SELECT f.*, s.*, c.* FROM object_heads AS h
-    INNER JOIN object_commits AS c ON h.commit_id = c.id
-    INNER JOIN object_forms AS f ON c.form_id = f.id
-    INNER JOIN object_shadows AS s ON c.shadow_id = s.id
-    WHERE c.form_id = $1 AND h.context_id = $2
-  `
-
 	sqlSelectFullObjectByCommit = `
 		SELECT f.*, s.*, c.* FROM object_commits AS c
 		INNER JOIN object_forms AS f ON c.form_id = f.id
@@ -34,20 +26,8 @@ type FullObject struct {
 	Commit ObjectCommit
 }
 
-// FindLatest retrieves the most recent FullObject in a given view.
-func (f FullObject) FindLatest(db *sql.DB, id int64, viewID int64) (FullObject, error) {
-	if id == 0 {
-		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "id")
-	} else if viewID == 0 {
-		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "viewID")
-	}
-
-	row := db.QueryRow(sqlSelectFullObjectLatest, id, viewID)
-	return f.findRow(row)
-}
-
-// FindByCommit retrieves a FullObject at a specific commit.
-func (f FullObject) FindByCommit(db *sql.DB, commitID int64) (FullObject, error) {
+// Find retrieves a FullObject at a specific commit.
+func (f FullObject) Find(db *sql.DB, commitID int64) (FullObject, error) {
 	if commitID == 0 {
 		return f, fmt.Errorf(errFieldMustBeGreaterThanZero, "commitID")
 	}

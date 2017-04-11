@@ -105,7 +105,7 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 	log.Debugln("Insert the EntityHead")
 	head := models.EntityHead{
 		RootID:    newRoot.ID,
-		ContextID: viewID,
+		ViewID:    viewID,
 		VersionID: newVersion.ID,
 	}
 

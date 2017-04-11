@@ -32,11 +32,11 @@ func TestCreate(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := models.CreateObjectContext(t, db)
+	view := models.CreateView(t, db)
 	product := Product{Title: "Fox Socks"}
 
 	mgr := NewEntityManager(db)
-	newProduct, err := mgr.Create(&product, context.ID)
+	newProduct, err := mgr.Create(&product, view.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -62,14 +62,14 @@ func TestCreate_CustomAttributes(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := models.CreateObjectContext(t, db)
+	view := models.CreateView(t, db)
 	product := Product{Title: "Fox Socks"}
 	if err := product.SetAttribute("description", "A nice pair of socks"); err != nil {
 		t.Fatal(err)
 	}
 
 	mgr := NewEntityManager(db)
-	newProduct, err := mgr.Create(&product, context.ID)
+	newProduct, err := mgr.Create(&product, view.ID)
 	if err != nil {
 		t.Error(err)
 		return
@@ -86,11 +86,11 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := models.CreateObjectContext(t, db)
+	view := models.CreateView(t, db)
 
 	sku := SKU{Price: 999.0}
 	mgr := NewEntityManager(db)
-	newSKU, err := mgr.Create(&sku, context.ID)
+	newSKU, err := mgr.Create(&sku, view.ID)
 	if err != nil {
 		t.Error(err)
 		return
@@ -99,7 +99,7 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 	variant := Variant{Title: "Fox Socks"}
 	castedSKU := newSKU.(*SKU)
 	variant.SKUs = []SKU{*castedSKU}
-	newVariant, err := mgr.Create(&variant, context.ID)
+	newVariant, err := mgr.Create(&variant, view.ID)
 	if err != nil {
 		t.Error(err)
 		return

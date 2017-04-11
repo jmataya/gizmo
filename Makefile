@@ -21,9 +21,12 @@ migrate-test:
 
 reset:
 	dropdb --if-exists gizmo
+	dropdb --if-exists gizmo_test
 	dropuser --if-exists gizmo
 	createuser -s gizmo
 	createdb gizmo
+	createdb gizmo_test
+	@make migrate
 
 reset-test:
 	dropdb --if-exists gizmo_test

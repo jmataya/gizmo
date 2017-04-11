@@ -8,13 +8,13 @@ import (
 )
 
 const (
-	sqlInsertEntityHead = "INSERT INTO entity_heads (root_id, context_id, version_id) VALUES ($1, $2, $3) RETURNING *"
+	sqlInsertEntityHead = "INSERT INTO entity_heads (root_id, view_id, version_id) VALUES ($1, $2, $3) RETURNING *"
 )
 
 type EntityHead struct {
 	ID        int64
 	RootID    int64
-	ContextID int64
+	ViewID    int64
 	VersionID int64
 
 	CreatedAt  time.Time
@@ -23,8 +23,8 @@ type EntityHead struct {
 }
 
 func (head EntityHead) Validate() error {
-	if head.ContextID == 0 {
-		return fmt.Errorf(errFieldMustBeNonEmpty, "ContextID")
+	if head.ViewID == 0 {
+		return fmt.Errorf(errFieldMustBeNonEmpty, "ViewID")
 	} else if head.VersionID == 0 {
 		return fmt.Errorf(errFieldMustBeNonEmpty, "VersionID")
 	} else if head.RootID == 0 {
@@ -49,11 +49,11 @@ func (head EntityHead) Insert(db common.DB) (EntityHead, error) {
 	}
 
 	var newHead EntityHead
-	row := stmt.QueryRow(head.RootID, head.ContextID, head.VersionID)
+	row := stmt.QueryRow(head.RootID, head.ViewID, head.VersionID)
 	err = row.Scan(
 		&newHead.ID,
 		&newHead.RootID,
-		&newHead.ContextID,
+		&newHead.ViewID,
 		&newHead.VersionID,
 		&newHead.CreatedAt,
 		&newHead.UpdatedAt,
