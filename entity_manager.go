@@ -207,9 +207,15 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 
 func isEntity(fieldType reflect.Type) bool {
 	entityInterface := reflect.TypeOf((*Entity)(nil)).Elem()
-	fieldTypePtr := reflect.PtrTo(fieldType)
 
-	return fieldType.Implements(entityInterface) || fieldTypePtr.Implements(entityInterface)
+	switch fieldType.Kind() {
+	case reflect.Slice:
+		return isEntity(fieldType.Elem())
+	case reflect.Struct:
+		return reflect.PtrTo(fieldType).Implements(entityInterface)
+	default:
+		return fieldType.Implements(entityInterface)
+	}
 }
 
 func entityToFull(entity Entity) (*models.FullObject, error) {
@@ -236,7 +242,7 @@ func entityToFull(entity Entity) (*models.FullObject, error) {
 		fieldInfo := entityType.Field(i)
 		fieldVal := entityVal.Field(i)
 
-		if fieldIsPublic(fieldInfo) && !fieldInfo.Anonymous {
+		if fieldIsPublic(fieldInfo) && !fieldInfo.Anonymous && !isEntity(fieldInfo.Type) {
 			fName := fieldName(fieldInfo)
 			fType := typeName(fieldInfo.Type)
 			fVal := fieldVal.Interface()

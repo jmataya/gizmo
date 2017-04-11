@@ -11,7 +11,13 @@ import (
 
 type SKU struct {
 	EntityObject
-	Price int
+	Price float64
+}
+
+type Variant struct {
+	EntityObject
+	Title string
+	SKUs  []SKU
 }
 
 type Product struct {
@@ -71,4 +77,34 @@ func TestCreate_CustomAttributes(t *testing.T) {
 
 	actualDescription, _ := newProduct.Attribute("description")
 	assert.Equal("A nice pair of socks", actualDescription)
+}
+
+func TestCreate_SimpleAssociation(t *testing.T) {
+	assert := testutils.NewAssert(t)
+	log.SetLevel(log.DebugLevel)
+
+	db := testutils.InitDB(t)
+	defer db.Close()
+
+	context := models.CreateObjectContext(t, db)
+
+	sku := SKU{Price: 999.0}
+	mgr := NewEntityManager(db)
+	newSKU, err := mgr.Create(&sku, context.ID)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	variant := Variant{Title: "Fox Socks"}
+	castedSKU := newSKU.(*SKU)
+	variant.SKUs = []SKU{*castedSKU}
+	newVariant, err := mgr.Create(&variant, context.ID)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	actualTitle := newVariant.(*Variant).Title
+	assert.Equal(variant.Title, actualTitle)
 }
