@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -55,7 +54,7 @@ func (form *ObjectForm) AddAttribute(value interface{}) (string, error) {
 // all in a valid state.
 func (form ObjectForm) Validate() error {
 	if form.Kind == "" {
-		return errors.New(errObjectFormMustHaveKind)
+		return fmt.Errorf(errFieldMustBeNonEmpty, "Kind")
 	}
 
 	return nil

@@ -20,11 +20,11 @@ func TestCreate(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := models.CreateObjectContext(t, db)
+	view := models.CreateView(t, db)
 	product := Product{Title: "Fox Socks"}
 
 	mgr := NewEntityManager(db)
-	_, err := mgr.Create(&product, context.ID)
+	_, err := mgr.Create(&product, view.ID)
 	if err != nil {
 		t.Error(err)
 	}

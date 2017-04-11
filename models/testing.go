@@ -60,10 +60,10 @@ func createObjectCommit(t *testing.T, db *sql.DB, form ObjectForm, shadow Object
 	return inserted
 }
 
-func CreateObjectContext(t *testing.T, db *sql.DB) ObjectContext {
-	context := ObjectContext{Name: "Default"}
+func CreateView(t *testing.T, db *sql.DB) View {
+	view := View{Name: "Default"}
 
-	inserted, err := context.Insert(db)
+	inserted, err := view.Insert(db)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func CreateObjectContext(t *testing.T, db *sql.DB) ObjectContext {
 	return inserted
 }
 
-func createFullObject(t *testing.T, db *sql.DB, context ObjectContext) FullObject {
+func createFullObject(t *testing.T, db *sql.DB) FullObject {
 	form := createObjectForm(t, db)
 	shadow := createObjectShadow(t, db, form)
 	commit := createObjectCommit(t, db, form, shadow)

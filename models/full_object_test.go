@@ -11,9 +11,7 @@ func TestFind_Basic(t *testing.T) {
 	db := testutils.InitDB(t)
 	defer db.Close()
 
-	context := CreateObjectContext(t, db)
-	fullObject := createFullObject(t, db, context)
-
+	fullObject := createFullObject(t, db)
 	latest, err := fullObject.Find(db, fullObject.Commit.ID)
 	if err != nil {
 		t.Error(err)

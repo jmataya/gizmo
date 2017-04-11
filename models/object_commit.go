@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -27,9 +26,9 @@ type ObjectCommit struct {
 // are all in a valid state.
 func (commit ObjectCommit) Validate() error {
 	if commit.FormID == 0 {
-		return errors.New(errObjectCommitMustHaveFormID)
+		return fmt.Errorf(errFieldMustBeGreaterThanZero, "FormID")
 	} else if commit.ShadowID == 0 {
-		return errors.New(errObjectCommitMustHaveShadowID)
+		return fmt.Errorf(errFieldMustBeGreaterThanZero, "ShadowID")
 	}
 
 	return nil

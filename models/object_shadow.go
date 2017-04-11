@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -48,7 +47,7 @@ func (shadow *ObjectShadow) AddAttribute(attrName, attrType, attrRef string) err
 // are all in a valid state.
 func (shadow ObjectShadow) Validate() error {
 	if shadow.FormID == 0 {
-		return errors.New(errObjectShadowMustHaveFormID)
+		return fmt.Errorf(errFieldMustBeGreaterThanZero, "FormID")
 	}
 
 	return nil

@@ -6,7 +6,7 @@ import "errors"
 // arbitrary piece of data that can be represented in different Views and is
 // automatically versioned on each save.
 type Entity interface {
-	// Identifier is the unique ID of the Entity object across all Contexts.
+	// Identifier is the unique ID of the Entity object across all Views.
 	Identifier() int64
 
 	// SetIdentifier sets the unique ID for the Entity object.
@@ -46,7 +46,7 @@ type EntityObject struct {
 	attributes map[string]interface{}
 }
 
-// Identifier is the unique ID of the Entity object across all Contexts.
+// Identifier is the unique ID of the Entity object across all Views.
 func (c *EntityObject) Identifier() int64 {
 	return c.id
 }
