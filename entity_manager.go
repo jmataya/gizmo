@@ -158,7 +158,9 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 
 		// If PkgPath is not empty, it indicates that the field is private and
 		// therefore one that we can't set. Ignore it. Also ignore embedded fields.
-		if field.PkgPath != "" || field.Anonymous {
+		// In the future, stop ignoring nested Entity objects.
+		if field.PkgPath != "" || field.Anonymous || isEntity(field.Type) {
+			log.Debugf("Ignoring %s", field.Name)
 			continue
 		}
 
@@ -171,7 +173,6 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 	}
 
 	elem := reflect.ValueOf(entity).Elem()
-	// if elem.Kind() == reflect.Struct {
 	log.Debugln("Decoding attributes on FullObject")
 	for name, attribute := range full.Shadow.Attributes {
 		log.Debugf("Decoding %s", name)
@@ -183,7 +184,12 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 
 		realName, ok := entityFields[name]
 		if !ok {
-			return fmt.Errorf("Can't match %s to Entity", name)
+			log.Debugf("Setting custom attribute %s", name)
+			if err := entity.SetAttribute(name, attrValue); err != nil {
+				return err
+			}
+
+			continue
 		}
 
 		entityField := elem.FieldByName(realName)
@@ -195,11 +201,15 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 
 		entityField.Set(reflect.ValueOf(attrValue))
 	}
-	// } else {
-	// 	return fmt.Errorf("Invalid kind %v, expected struct", elem.Kind())
-	// }
 
 	return nil
+}
+
+func isEntity(fieldType reflect.Type) bool {
+	entityInterface := reflect.TypeOf((*Entity)(nil)).Elem()
+	fieldTypePtr := reflect.PtrTo(fieldType)
+
+	return fieldType.Implements(entityInterface) || fieldTypePtr.Implements(entityInterface)
 }
 
 func entityToFull(entity Entity) (*models.FullObject, error) {
@@ -228,7 +238,7 @@ func entityToFull(entity Entity) (*models.FullObject, error) {
 
 		if fieldIsPublic(fieldInfo) && !fieldInfo.Anonymous {
 			fName := fieldName(fieldInfo)
-			fType := typeName(fieldInfo)
+			fType := typeName(fieldInfo.Type)
 			fVal := fieldVal.Interface()
 
 			log.Debugf("Converting Name=%s, Type=%s, Value=%v", fName, fType, fVal)
@@ -243,6 +253,25 @@ func entityToFull(entity Entity) (*models.FullObject, error) {
 			if err := shadow.AddAttribute(fName, fType, ref); err != nil {
 				return nil, err
 			}
+		}
+	}
+
+	log.Debugln("Discovering custom attributes")
+
+	for name, val := range entity.Attributes() {
+		fType := typeName(reflect.TypeOf(val))
+
+		log.Debugf("Converting Custom Name=%s, Type=%s, Value=%v", name, fType, val)
+
+		log.Debugln("Adding value to form")
+		ref, err := form.AddAttribute(val)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Debugln("Adding ref to shadow")
+		if err := shadow.AddAttribute(name, fType, ref); err != nil {
+			return nil, err
 		}
 	}
 
@@ -316,8 +345,8 @@ func lowercaseFirst(str string) string {
 	return head + tail
 }
 
-func typeName(field reflect.StructField) string {
-	switch field.Type.Kind() {
+func typeName(tp reflect.Type) string {
+	switch tp.Kind() {
 	case reflect.Int32:
 		return "int"
 	case reflect.Int64:
@@ -327,6 +356,6 @@ func typeName(field reflect.StructField) string {
 	case reflect.Float64:
 		return "float"
 	default:
-		return strings.ToLower(field.Type.Name())
+		return strings.ToLower(tp.Name())
 	}
 }

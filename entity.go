@@ -24,6 +24,9 @@ type Entity interface {
 	// SetViewID sets the ViewID for the Entity object.
 	SetViewID(id int64) error
 
+	// Attributes gets all of the custom attributes.
+	Attributes() map[string]interface{}
+
 	// Attribute gets the value of a custom attribute. If the attribute is not
 	// found, nil is returned.
 	Attribute(key string) (interface{}, error)
@@ -89,6 +92,11 @@ func (c *EntityObject) SetViewID(viewID int64) error {
 
 	c.viewID = viewID
 	return nil
+}
+
+// Attributes gets the set of custom attributes.
+func (c *EntityObject) Attributes() map[string]interface{} {
+	return c.attributes
 }
 
 // Attribute gets the value of a custom attribute. If the attribute is not
