@@ -71,20 +71,6 @@ func CreateObjectContext(t *testing.T, db *sql.DB) ObjectContext {
 	return inserted
 }
 
-func createObjectHead(t *testing.T, db *sql.DB, context ObjectContext, commit ObjectCommit) ObjectHead {
-	head := ObjectHead{
-		ContextID: context.ID,
-		CommitID:  commit.ID,
-	}
-
-	inserted, err := head.Insert(db)
-	if err != nil {
-		t.Error(err)
-	}
-
-	return inserted
-}
-
 func createFullObject(t *testing.T, db *sql.DB, context ObjectContext) FullObject {
 	form := createObjectForm(t, db)
 	shadow := createObjectShadow(t, db, form)
