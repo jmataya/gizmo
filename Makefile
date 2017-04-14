@@ -7,6 +7,11 @@ NO_COLOR = \033[0m
 baseheader = @echo "---$(1)$(RED)$(2)$(NO_COLOR)"
 header = $(call baseheader, $(1), gizmo)
 
+docs:
+	$(call header, Starting Docs Server)
+	godoc -http=:6060 &
+	echo 'View documentation: http://localhost:6060/pkg/github.com/FoxComm/gizmo'
+
 info-test:
 	$(call header, Testing)
 
@@ -36,4 +41,4 @@ reset-test:
 test: info-test
 	go test -p 1 . ./models
 
-.PHONY: glide info-test migrate migrate-test reset reset-test test
+.PHONY: glide docs info-test migrate migrate-test reset reset-test test
