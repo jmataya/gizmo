@@ -85,7 +85,10 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 	}
 
 	log.Debugln("Insert the EntityVersion")
-	version := models.EntityVersion{ContentCommitID: newFullObject.Commit.ID}
+	version := models.EntityVersion{
+		ContentCommitID: newFullObject.Commit.ID,
+		Kind:            newFullObject.Form.Kind,
+	}
 	newVersion, err := version.Insert(tx)
 	if err != nil {
 		tx.Rollback()

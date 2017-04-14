@@ -15,7 +15,7 @@ type ObjectFormAttributes map[string]interface{}
 func (ofa *ObjectFormAttributes) Scan(src interface{}) error {
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("Type assertion .([]byte) failed.")
+		return errors.New("type assertion .([]byte) failed")
 	}
 
 	return json.Unmarshal(source, ofa)

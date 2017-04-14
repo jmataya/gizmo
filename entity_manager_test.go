@@ -38,7 +38,7 @@ func TestCreate(t *testing.T) {
 	mgr := NewEntityManager(db)
 	newProduct, err := mgr.Create(&product, view.ID)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	actualTitle := newProduct.(*Product).Title
