@@ -205,7 +205,7 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 		entityField.Set(reflect.ValueOf(attrValue))
 	}
 
-	return nil
+	return entity.SetKind(full.Form.Kind)
 }
 
 func isEntity(fieldType reflect.Type) bool {

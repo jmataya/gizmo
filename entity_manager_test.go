@@ -41,6 +41,8 @@ func TestCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	assert.Equal("product", newProduct.Kind())
+
 	actualTitle := newProduct.(*Product).Title
 	assert.Equal(product.Title, actualTitle)
 
@@ -96,6 +98,8 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 		return
 	}
 
+	assert.Equal("sku", newSKU.Kind())
+
 	variant := Variant{Title: "Fox Socks"}
 	castedSKU := newSKU.(*SKU)
 	variant.SKUs = []SKU{*castedSKU}
@@ -105,6 +109,11 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 		return
 	}
 
+	assert.Equal("variant", newVariant.Kind())
+
 	actualTitle := newVariant.(*Variant).Title
 	assert.Equal(variant.Title, actualTitle)
+
+	skus := newVariant.(*Variant).SKUs
+	assert.Equal(1, len(skus))
 }

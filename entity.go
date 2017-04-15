@@ -24,6 +24,12 @@ type Entity interface {
 	// SetViewID sets the ViewID for the Entity object.
 	SetViewID(id int64) error
 
+	// Kind is an identifier of the type of Entity.
+	Kind() string
+
+	// SetKind sets the type of Entity.
+	SetKind(str string) error
+
 	// Attributes gets all of the custom attributes.
 	Attributes() map[string]interface{}
 
@@ -46,6 +52,7 @@ type EntityObject struct {
 	id         int64
 	commitID   int64
 	viewID     int64
+	kind       string
 	attributes map[string]interface{}
 }
 
@@ -91,6 +98,21 @@ func (c *EntityObject) SetViewID(viewID int64) error {
 	}
 
 	c.viewID = viewID
+	return nil
+}
+
+// Kind is an identifier of the type of Entity.
+func (c *EntityObject) Kind() string {
+	return c.kind
+}
+
+// SetKind sets the type of Entity.
+func (c *EntityObject) SetKind(kind string) error {
+	if kind == "" {
+		return errors.New("Kind must be non-empty")
+	}
+
+	c.kind = kind
 	return nil
 }
 
