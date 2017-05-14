@@ -1,6 +1,9 @@
 package gizmo
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // Entity is the most basic structure in the library. It represents an
 // arbitrary piece of data that can be represented in different Views and is
@@ -44,6 +47,25 @@ type Entity interface {
 	// RemoveAttribute removes the attribute from the list of custom attributes.
 	// If the key does not exist, the function is a no-op.
 	RemoveAttribute(key string) error
+
+	// Relations gets all of the relations to other Entities.
+	Relations() map[string][]int64
+
+	// RelationsByEntity gets all of the associations between this Entity and an
+	// Entity of a specified type.
+	RelationsByEntity(entityType string) ([]int64, error)
+
+	// SetRelation creates a mapping between this Entity and another existing
+	// Entity. If the mapping already exists, nothing is changed.
+	SetRelation(entityType string, entityID int64) error
+
+	// UpdateRelation updates the ID of a mapping between this Entity and another
+	// previously associated Entity.
+	UpdateRelation(entityType string, oldID int64, newID int64) error
+
+	// RemoveRelation deletes a mapping between this Entity and another Entity.
+	// If the mapping did not previously exist, an error is thrown.
+	RemoveRelation(entityType string, entityID int64) error
 }
 
 // EntityObject is the default implementation of the Entity interface.
@@ -54,6 +76,7 @@ type EntityObject struct {
 	viewID     int64
 	kind       string
 	attributes map[string]interface{}
+	relations  map[string][]int64
 }
 
 // Identifier is the unique ID of the Entity object across all Views.
@@ -168,4 +191,112 @@ func (c *EntityObject) RemoveAttribute(key string) error {
 
 	delete(c.attributes, key)
 	return nil
+}
+
+// Relations gets all of the relations to other Entities.
+func (c *EntityObject) Relations() map[string][]int64 {
+	if c.relations == nil {
+		return map[string][]int64{}
+	}
+
+	return c.relations
+}
+
+// RelationsByEntity gets all of the associations between this Entity and an
+// Entity of a specified type.
+func (c *EntityObject) RelationsByEntity(entityType string) ([]int64, error) {
+	if entityType == "" {
+		return nil, errors.New("Entity type must be non-empty")
+	}
+
+	if c.relations == nil {
+		return []int64{}, nil
+	}
+
+	ids, ok := c.relations[entityType]
+	if !ok {
+		return []int64{}, nil
+	}
+
+	return ids, nil
+}
+
+// SetRelation creates a mapping between this Entity and another existing
+// Entity. If the mapping already exists, nothign is changed.
+func (c *EntityObject) SetRelation(entityType string, entityID int64) error {
+	if entityType == "" {
+		return errors.New("Entity type must be non-empty")
+	}
+
+	if c.relations == nil {
+		c.relations = map[string][]int64{}
+	}
+
+	ids, ok := c.relations[entityType]
+	if !ok {
+		ids = []int64{}
+	}
+
+	for _, id := range ids {
+		if id == entityID {
+			// The ID is already in the list, meaning the mapping exists.
+			// Return with no error and no change.
+			return nil
+		}
+	}
+
+	c.relations[entityType] = append(ids, entityID)
+	return nil
+}
+
+// UpdateRelation updates the ID of a mapping between this Entity and another
+// previously associated Entity.
+func (c *EntityObject) UpdateRelation(entityType string, oldID int64, newID int64) error {
+	if entityType == "" {
+		return errors.New("Entity type must be non-empty")
+	} else if c.relations == nil {
+		return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
+	}
+
+	ids, ok := c.relations[entityType]
+	if !ok {
+		return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
+	}
+
+	for index, id := range ids {
+		if id == oldID {
+			ids[index] = newID
+			c.relations[entityType] = ids
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
+}
+
+// RemoveRelation deletes a mapping between this Entity and another Entity.
+// If the mapping did not previously exist, an error is thrown.
+func (c *EntityObject) RemoveRelation(entityType string, entityID int64) error {
+	if entityType == "" {
+		return errors.New("Entity type must be non-empty")
+	} else if c.relations == nil {
+		return fmt.Errorf("Mapping to %d of type %s is not found", entityID, entityType)
+	}
+
+	ids, ok := c.relations[entityType]
+	if !ok {
+		return fmt.Errorf("Mapping to %d of type %s is not found", entityID, entityType)
+	}
+
+	for index, id := range ids {
+		if id == entityID {
+			copy(ids[index:], ids[index+1:])
+			ids = ids[:len(ids)-1]
+
+			c.relations[entityType] = ids
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Mapping to %d of type %s is not found", entityID, entityType)
 }
