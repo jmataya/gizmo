@@ -222,10 +222,12 @@ func (c *EntityObject) RelationsByEntity(entityType string) ([]int64, error) {
 }
 
 // SetRelation creates a mapping between this Entity and another existing
-// Entity. If the mapping already exists, nothign is changed.
+// Entity. If the mapping already exists, nothing is changed.
 func (c *EntityObject) SetRelation(entityType string, entityID int64) error {
 	if entityType == "" {
 		return errors.New("Entity type must be non-empty")
+	} else if entityID < 1 {
+		return errors.New("Entity ID must be greater than 0")
 	}
 
 	if c.relations == nil {
@@ -254,6 +256,10 @@ func (c *EntityObject) SetRelation(entityType string, entityID int64) error {
 func (c *EntityObject) UpdateRelation(entityType string, oldID int64, newID int64) error {
 	if entityType == "" {
 		return errors.New("Entity type must be non-empty")
+	} else if oldID < 1 {
+		return errors.New("Old ID must be greater than 0")
+	} else if newID < 1 {
+		return errors.New("New ID must be greater than 0")
 	} else if c.relations == nil {
 		return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
 	}
@@ -263,15 +269,24 @@ func (c *EntityObject) UpdateRelation(entityType string, oldID int64, newID int6
 		return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
 	}
 
+	var updatedIDs []int64
+
 	for index, id := range ids {
 		if id == oldID {
-			ids[index] = newID
-			c.relations[entityType] = ids
-			return nil
+			updatedIDs = make([]int64, len(ids))
+			copy(updatedIDs, ids)
+			updatedIDs[index] = newID
+		} else if id == newID {
+			return fmt.Errorf("New mapping to %d of type %s is already an existing mapping", newID, entityType)
 		}
 	}
 
-	return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
+	if updatedIDs == nil {
+		return fmt.Errorf("Mapping to %d of type %s is not found", oldID, entityType)
+	}
+
+	c.relations[entityType] = updatedIDs
+	return nil
 }
 
 // RemoveRelation deletes a mapping between this Entity and another Entity.
@@ -279,6 +294,8 @@ func (c *EntityObject) UpdateRelation(entityType string, oldID int64, newID int6
 func (c *EntityObject) RemoveRelation(entityType string, entityID int64) error {
 	if entityType == "" {
 		return errors.New("Entity type must be non-empty")
+	} else if entityID < 1 {
+		return errors.New("Entity ID must be greater than 0")
 	} else if c.relations == nil {
 		return fmt.Errorf("Mapping to %d of type %s is not found", entityID, entityType)
 	}
