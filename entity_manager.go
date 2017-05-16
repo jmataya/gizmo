@@ -84,10 +84,17 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 		return nil, err
 	}
 
+	log.Debugln("Getting relations from Entity")
+	relations, err := relationsFromEntity(toCreate)
+	if err != nil {
+		return nil, err
+	}
+
 	log.Debugln("Insert the EntityVersion")
 	version := models.EntityVersion{
 		ContentCommitID: newFullObject.Commit.ID,
 		Kind:            newFullObject.Form.Kind,
+		Relations:       relations,
 	}
 	newVersion, err := version.Insert(tx)
 	if err != nil {
@@ -225,7 +232,16 @@ func isEntity(fieldType reflect.Type) bool {
 	}
 }
 
-func entityToFull(entity Entity) (*models.FullObject, error) {
+type reflectedFields struct {
+	Info  reflect.StructField
+	Value reflect.Value
+}
+
+func extractEntity(entity Entity) (name string, fields []reflectedFields, err error) {
+	name = ""
+	fields = []reflectedFields{}
+	err = nil
+
 	entityType := reflect.TypeOf(entity)
 	entityVal := reflect.ValueOf(entity)
 
@@ -233,26 +249,83 @@ func entityToFull(entity Entity) (*models.FullObject, error) {
 		log.Debugln("Pointer type detected for entity, getting underlying element")
 		entityType = entityType.Elem()
 		entityVal = entityVal.Elem()
-	} else if entityType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("Expected kind of parameter to be a struct or pointer, not %v", entityType)
+	} else if entityType.Kind() != reflect.Ptr {
+		err = fmt.Errorf("Expected kind of parameter to be a struct or pointer, not %v", entityType)
+		return
 	}
 
-	log.Debugf("Name of the type to convert is %s", entityType.Name())
+	name = entityType.Name()
+	log.Debugf("Name of the type whose fields are being extracted is %s", name)
 
-	kind := strings.ToLower(entityType.Name())
+	for i := 0; i < entityVal.NumField(); i++ {
+		field := reflectedFields{
+			Info:  entityType.Field(i),
+			Value: entityVal.Field(i),
+		}
+
+		fields = append(fields, field)
+	}
+
+	return
+}
+
+func relationsFromEntity(entity Entity) (models.EntityRelations, error) {
+	_, fields, err := extractEntity(entity)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debugln("Discovering relations")
+
+	relations := map[string][]int64{}
+	for _, field := range fields {
+		if fieldIsPublic(field.Info) && !field.Info.Anonymous && isEntity(field.Info.Type) {
+			fieldName := strings.ToLower(field.Info.Name)
+			fieldValue := field.Value.Interface()
+
+			log.Debugf("Found relation %s with value %+v", fieldName, fieldValue)
+
+			if field.Value.Kind() == reflect.Slice {
+				s := reflect.ValueOf(fieldValue)
+				for i := 0; i < s.Len(); i++ {
+					entity, ok := s.Index(i).Interface().(Entity)
+					if !ok {
+						return nil, fmt.Errorf("Unable to convert %s to Entity", fieldName)
+					}
+
+					commitList, ok := relations[fieldName]
+					if !ok {
+						commitList = []int64{}
+					}
+
+					relations[fieldName] = append(commitList, entity.CommitID())
+				}
+			} else {
+				log.Debugln("NOT SLICE")
+			}
+		}
+	}
+
+	return relations, nil
+}
+
+func entityToFull(entity Entity) (*models.FullObject, error) {
+	name, fields, err := extractEntity(entity)
+	if err != nil {
+		return nil, err
+	}
+
+	kind := strings.ToLower(name)
 	form := models.NewObjectForm(kind)
 	shadow := models.NewObjectShadow()
 
 	log.Debugln("Discovering public fields")
 
-	for i := 0; i < entityVal.NumField(); i++ {
-		fieldInfo := entityType.Field(i)
-		fieldVal := entityVal.Field(i)
-
-		if fieldIsPublic(fieldInfo) && !fieldInfo.Anonymous && !isEntity(fieldInfo.Type) {
-			fName := fieldName(fieldInfo)
-			fType := typeName(fieldInfo.Type)
-			fVal := fieldVal.Interface()
+	for _, field := range fields {
+		if fieldIsPublic(field.Info) && !field.Info.Anonymous && !isEntity(field.Info.Type) {
+			fName := fieldName(field.Info)
+			fType := typeName(field.Info.Type)
+			fVal := field.Value.Interface()
 
 			log.Debugf("Converting Name=%s, Type=%s, Value=%v", fName, fType, fVal)
 

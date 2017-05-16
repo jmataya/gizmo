@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	sqlInsertEntityVersion = "INSERT INTO entity_versions (content_commit_id, kind) VALUES ($1, $2) RETURNING *"
+	sqlInsertEntityVersion = "INSERT INTO entity_versions (content_commit_id, kind, relations) VALUES ($1, $2, $3) RETURNING *"
 )
 
 // EntityVersion is a snapshot in time of the full structure of an Entity. It
@@ -62,7 +62,7 @@ func (version EntityVersion) Insert(db common.DB) (EntityVersion, error) {
 	var entityRelations EntityRelations
 	var createdAt time.Time
 
-	row := stmt.QueryRow(version.ContentCommitID, strings.ToLower(version.Kind))
+	row := stmt.QueryRow(version.ContentCommitID, strings.ToLower(version.Kind), &version.Relations)
 	if err := row.Scan(&id, &parentID, &kind, &contentCommitID, &entityRelations, &createdAt); err != nil {
 		return newVersion, err
 	}

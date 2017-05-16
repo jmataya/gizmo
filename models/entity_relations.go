@@ -12,6 +12,13 @@ import (
 // mapping.
 type EntityRelations map[string][]int64
 
+// NewEntityRelations initializes a new EntityRelations object based on a map
+// of relations.
+func NewEntityRelations(relations map[string][]int64) EntityRelations {
+	entityRelations := EntityRelations(relations)
+	return entityRelations
+}
+
 // Scan is an interface for getting JSON out of the database and turns it into a
 // struct.
 func (er *EntityRelations) Scan(src interface{}) error {
