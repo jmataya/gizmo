@@ -12,26 +12,14 @@ type Entity interface {
 	// Identifier is the unique ID of the Entity object across all Views.
 	Identifier() int64
 
-	// SetIdentifier sets the unique ID for the Entity object.
-	SetIdentifier(id int64) error
-
 	// CommitID is the ID of the commit with the specific data in this object.
 	CommitID() int64
-
-	// SetCommitID sets the commit ID for the Entity object.
-	SetCommitID(id int64) error
 
 	// ViewID is the ID of the Entity that this exists in.
 	ViewID() int64
 
-	// SetViewID sets the ViewID for the Entity object.
-	SetViewID(id int64) error
-
 	// Kind is an identifier of the type of Entity.
 	Kind() string
-
-	// SetKind sets the type of Entity.
-	SetKind(str string) error
 
 	// Attributes gets all of the custom attributes.
 	Attributes() map[string]interface{}
@@ -40,6 +28,28 @@ type Entity interface {
 	// found, nil is returned.
 	Attribute(key string) (interface{}, error)
 
+	// Relations gets all of the relations to other Entities.
+	Relations() map[string][]int64
+
+	// RelationsByEntity gets all of the associations between this Entity and an
+	// Entity of a specified type.
+	RelationsByEntity(entityType string) ([]int64, error)
+}
+
+// EntityUpdater is the interface for modifying the contents of an Entity.
+type EntityUpdater interface {
+	// SetIdentifier sets the unique ID for the Entity object.
+	SetIdentifier(id int64) error
+
+	// SetCommitID sets the commit ID for the Entity object.
+	SetCommitID(id int64) error
+
+	// SetViewID sets the ViewID for the Entity object.
+	SetViewID(id int64) error
+
+	// SetKind sets the type of Entity.
+	SetKind(str string) error
+
 	// SetAttribute sets the value of a custom attribute. It can be used to
 	// either create or update the attribute.
 	SetAttribute(key string, value interface{}) error
@@ -47,13 +57,6 @@ type Entity interface {
 	// RemoveAttribute removes the attribute from the list of custom attributes.
 	// If the key does not exist, the function is a no-op.
 	RemoveAttribute(key string) error
-
-	// Relations gets all of the relations to other Entities.
-	Relations() map[string][]int64
-
-	// RelationsByEntity gets all of the associations between this Entity and an
-	// Entity of a specified type.
-	RelationsByEntity(entityType string) ([]int64, error)
 
 	// SetRelation creates a mapping between this Entity and another existing
 	// Entity. If the mapping already exists, nothing is changed.
@@ -80,7 +83,7 @@ type EntityObject struct {
 }
 
 // Identifier is the unique ID of the Entity object across all Views.
-func (c *EntityObject) Identifier() int64 {
+func (c EntityObject) Identifier() int64 {
 	return c.id
 }
 
@@ -95,7 +98,7 @@ func (c *EntityObject) SetIdentifier(id int64) error {
 }
 
 // CommitID is the ID of the commit with the specific data in this object.
-func (c *EntityObject) CommitID() int64 {
+func (c EntityObject) CommitID() int64 {
 	return c.commitID
 }
 
@@ -110,7 +113,7 @@ func (c *EntityObject) SetCommitID(commitID int64) error {
 }
 
 // ViewID is the ID of the Entity that this exists in.
-func (c *EntityObject) ViewID() int64 {
+func (c EntityObject) ViewID() int64 {
 	return c.viewID
 }
 
@@ -125,7 +128,7 @@ func (c *EntityObject) SetViewID(viewID int64) error {
 }
 
 // Kind is an identifier of the type of Entity.
-func (c *EntityObject) Kind() string {
+func (c EntityObject) Kind() string {
 	return c.kind
 }
 
@@ -140,13 +143,13 @@ func (c *EntityObject) SetKind(kind string) error {
 }
 
 // Attributes gets the set of custom attributes.
-func (c *EntityObject) Attributes() map[string]interface{} {
+func (c EntityObject) Attributes() map[string]interface{} {
 	return c.attributes
 }
 
 // Attribute gets the value of a custom attribute. If the attribute is not
 // found, nil is returned.
-func (c *EntityObject) Attribute(key string) (interface{}, error) {
+func (c EntityObject) Attribute(key string) (interface{}, error) {
 	if key == "" {
 		return nil, errors.New("Attribute key must be non-empty")
 	}
@@ -194,7 +197,7 @@ func (c *EntityObject) RemoveAttribute(key string) error {
 }
 
 // Relations gets all of the relations to other Entities.
-func (c *EntityObject) Relations() map[string][]int64 {
+func (c EntityObject) Relations() map[string][]int64 {
 	if c.relations == nil {
 		return map[string][]int64{}
 	}
@@ -204,7 +207,7 @@ func (c *EntityObject) Relations() map[string][]int64 {
 
 // RelationsByEntity gets all of the associations between this Entity and an
 // Entity of a specified type.
-func (c *EntityObject) RelationsByEntity(entityType string) ([]int64, error) {
+func (c EntityObject) RelationsByEntity(entityType string) ([]int64, error) {
 	if entityType == "" {
 		return nil, errors.New("Entity type must be non-empty")
 	}

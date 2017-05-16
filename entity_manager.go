@@ -128,9 +128,11 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 		return nil, err
 	}
 
-	createdEntity.SetIdentifier(newRoot.ID)
-	createdEntity.SetCommitID(newVersion.ID)
-	createdEntity.SetViewID(viewID)
+	// FIX ME: Updater should be an object that wraps the entity, not a typecast.
+	entityUpdater := createdEntity.(EntityUpdater)
+	entityUpdater.SetIdentifier(newRoot.ID)
+	entityUpdater.SetCommitID(newVersion.ID)
+	entityUpdater.SetViewID(viewID)
 
 	return createdEntity, tx.Commit()
 }
@@ -188,7 +190,8 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 		realName, ok := entityFields[name]
 		if !ok {
 			log.Debugf("Setting custom attribute %s", name)
-			if err := entity.SetAttribute(name, attrValue); err != nil {
+			// FIX ME: Wrap this in an object, don't do a crappy typecast.
+			if err := entity.(EntityUpdater).SetAttribute(name, attrValue); err != nil {
 				return err
 			}
 
@@ -205,7 +208,8 @@ func fullToEntity(full models.FullObject, entity Entity) error {
 		entityField.Set(reflect.ValueOf(attrValue))
 	}
 
-	return entity.SetKind(full.Form.Kind)
+	// FIX ME: Wrap this in an object, don't do a crappy typecast.
+	return entity.(EntityUpdater).SetKind(full.Form.Kind)
 }
 
 func isEntity(fieldType reflect.Type) bool {

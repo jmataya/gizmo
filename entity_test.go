@@ -86,7 +86,8 @@ func TestSetRelation(t *testing.T) {
 
 	for _, test := range tests {
 		entity := createEntityObject()
-		err := entity.SetRelation(test.entityType, test.entityID)
+		// FIX ME: Wrap this in an object, don't do a crappy typecast.
+		err := entity.(EntityUpdater).SetRelation(test.entityType, test.entityID)
 		if errorMsg(err) != test.wantErr {
 			t.Errorf(
 				"SetRelation(%s, %d) = %s, want %s",
@@ -140,7 +141,8 @@ func TestUpdateRelation(t *testing.T) {
 		oldID := test.oldID
 		newID := test.newID
 
-		err := entity.UpdateRelation(entityType, oldID, newID)
+		// FIX ME: Wrap this in an object, don't do a crappy typecast.
+		err := entity.(EntityUpdater).UpdateRelation(entityType, oldID, newID)
 		if errorMsg(err) != test.wantErr {
 			t.Errorf(
 				"UpdateRelation(%s, %d, %d) = %s, want %s",
@@ -191,7 +193,7 @@ func TestRemoveRelation(t *testing.T) {
 		entityType := test.entityType
 		entityID := test.entityID
 
-		err := entity.RemoveRelation(entityType, entityID)
+		err := entity.(EntityUpdater).RemoveRelation(entityType, entityID)
 		if errorMsg(err) != test.wantErr {
 			t.Errorf(
 				"RemoveRelation(%s, %d) = %s, want %s",
