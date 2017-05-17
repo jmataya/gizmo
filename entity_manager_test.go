@@ -1,6 +1,7 @@
 package gizmo
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/FoxComm/gizmo/models"
@@ -114,6 +115,13 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 	actualTitle := newVariant.(*Variant).Title
 	assert.Equal(variant.Title, actualTitle)
 
-	skus := newVariant.(*Variant).SKUs
+	fmt.Printf("Variant: %+v\n", newVariant)
+
+	skus, err := newVariant.RelationsByEntity("sku")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	assert.Equal(1, len(skus))
 }

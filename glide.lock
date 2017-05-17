@@ -1,6 +1,8 @@
-hash: cfc4947259cc81229cb2b7b9e8804762becb02d4192951c28ead2368c31c2b12
-updated: 2017-04-06T17:10:25.387809692-07:00
+hash: d1b20c07232eba609de4f2e66ccc7789c166347274d029e6808f27fee698bc1a
+updated: 2017-05-16T21:28:06.481445838-07:00
 imports:
+- name: github.com/gedex/inflector
+  version: 16278e9db8130ac7ec405dc174cfb94344f16325
 - name: github.com/lib/pq
   version: 55196ec83d60d789e27b2627549bf00974a70084
   subpackages:

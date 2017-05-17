@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/FoxComm/gizmo/models"
+	"github.com/gedex/inflector"
 	_ "github.com/lib/pq" // Needed to allow database/sql to use Postgres.
 	log "github.com/sirupsen/logrus"
 )
@@ -137,9 +138,13 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 
 	// FIX ME: Updater should be an object that wraps the entity, not a typecast.
 	entityUpdater := createdEntity.(EntityUpdater)
+
+	log.Debugln("Setting relations")
+
 	entityUpdater.SetIdentifier(newRoot.ID)
 	entityUpdater.SetCommitID(newVersion.ID)
 	entityUpdater.SetViewID(viewID)
+	entityUpdater.SetRelations(relations)
 
 	return createdEntity, tx.Commit()
 }
@@ -280,33 +285,51 @@ func relationsFromEntity(entity Entity) (models.EntityRelations, error) {
 	relations := map[string][]int64{}
 	for _, field := range fields {
 		if fieldIsPublic(field.Info) && !field.Info.Anonymous && isEntity(field.Info.Type) {
-			fieldName := strings.ToLower(field.Info.Name)
+			fieldName := strings.ToLower(inflector.Singularize(field.Info.Name))
 			fieldValue := field.Value.Interface()
 
 			log.Debugf("Found relation %s with value %+v", fieldName, fieldValue)
 
-			if field.Value.Kind() == reflect.Slice {
-				s := reflect.ValueOf(fieldValue)
-				for i := 0; i < s.Len(); i++ {
-					entity, ok := s.Index(i).Interface().(Entity)
-					if !ok {
-						return nil, fmt.Errorf("Unable to convert %s to Entity", fieldName)
+			switch field.Value.Kind() {
+			case reflect.Slice:
+				entitySlice := reflect.ValueOf(fieldValue)
+				for i := 0; i < entitySlice.Len(); i++ {
+					relations[fieldName], err = appendToCommitList(relations[fieldName], entitySlice.Index(i))
+					if err != nil {
+						return nil, err
 					}
-
-					commitList, ok := relations[fieldName]
-					if !ok {
-						commitList = []int64{}
-					}
-
-					relations[fieldName] = append(commitList, entity.CommitID())
 				}
-			} else {
-				log.Debugln("NOT SLICE")
+			case reflect.Struct:
+				relations[fieldName], err = appendToCommitList(relations[fieldName], field.Value)
+				if err != nil {
+					return nil, err
+				}
+			case reflect.Ptr:
+				entityValue := field.Value.Elem()
+				relations[fieldName], err = appendToCommitList(relations[fieldName], entityValue)
+				if err != nil {
+					return nil, err
+				}
+			default:
+				return nil, fmt.Errorf("Unexpected relation type %v", field.Value.Kind())
 			}
 		}
 	}
 
 	return relations, nil
+}
+
+func appendToCommitList(commits []int64, value reflect.Value) ([]int64, error) {
+	entity, ok := value.Interface().(Entity)
+	if !ok {
+		return nil, errors.New("Cannot convert value to Entity")
+	}
+
+	if commits == nil {
+		commits = []int64{}
+	}
+
+	return append(commits, entity.CommitID()), nil
 }
 
 func entityToFull(entity Entity) (*models.FullObject, error) {

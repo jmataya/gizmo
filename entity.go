@@ -62,6 +62,9 @@ type EntityUpdater interface {
 	// Entity. If the mapping already exists, nothing is changed.
 	SetRelation(entityType string, entityID int64) error
 
+	// SetRelations overwrites an Entity's relations.
+	SetRelations(relations map[string][]int64)
+
 	// UpdateRelation updates the ID of a mapping between this Entity and another
 	// previously associated Entity.
 	UpdateRelation(entityType string, oldID int64, newID int64) error
@@ -252,6 +255,11 @@ func (c *EntityObject) SetRelation(entityType string, entityID int64) error {
 
 	c.relations[entityType] = append(ids, entityID)
 	return nil
+}
+
+// SetRelations overwrites an Entity's relations.
+func (c *EntityObject) SetRelations(relations map[string][]int64) {
+	c.relations = relations
 }
 
 // UpdateRelation updates the ID of a mapping between this Entity and another
