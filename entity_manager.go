@@ -9,6 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/FoxComm/gizmo/dal"
 	"github.com/FoxComm/gizmo/models"
 	"github.com/gedex/inflector"
 	_ "github.com/lib/pq" // Needed to allow database/sql to use Postgres.
@@ -23,8 +24,7 @@ const (
 // EntityManager is the interface for creating, managing, and deleting Entity.
 type EntityManager interface {
 	// Find retrieves the most recent version of a Entity object within a View.
-	// None of the parameters are modified, including the type hint.
-	Find(id int64, viewID int64, typeHint Entity) (Entity, error)
+	Find(id int64, viewID int64, out Entity) error
 
 	// FindByCommit retrieves a Entity object at a specific commit. This will
 	// retrieve the entire object, including all associated objects, as of that
@@ -57,8 +57,8 @@ type defaultEntityManager struct {
 	db *sql.DB
 }
 
-func (d *defaultEntityManager) Find(id int64, viewID int64, typeHint Entity) (Entity, error) {
-	return nil, errors.New("Not implemented")
+func (d *defaultEntityManager) Find(id int64, viewID int64, out Entity) error {
+	return errors.New("Not implemented")
 }
 
 func (d *defaultEntityManager) FindByCommit(commitID int64, typeHint Entity) (Entity, error) {
@@ -106,7 +106,7 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 
 	log.Debugln("Insert the EntityRoot")
 	root := models.EntityRoot{Kind: fullObject.Form.Kind}
-	newRoot, err := root.Insert(tx)
+	newRoot, err := dal.InsertEntityRoot(tx, root)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -129,7 +129,6 @@ func (d *defaultEntityManager) Create(toCreate Entity, viewID int64) (Entity, er
 
 	log.Debugln("Convert content back to Entity")
 	entityType := reflect.ValueOf(toCreate).Type().Elem()
-	fmt.Printf("Entity type = %v\n", entityType)
 	createdEntity := reflect.New(entityType).Interface().(Entity)
 	if err = fullToEntity(newFullObject, createdEntity); err != nil {
 		tx.Rollback()
