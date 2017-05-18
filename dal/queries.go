@@ -15,6 +15,17 @@ const (
 	errNoInsertHasPrimaryKey = "%s has a primary key and cannot be inserted"
 )
 
+func InsertEntityHaed(db common.DB, model models.EntityHead) (models.EntityHead, error) {
+	if err := model.Validate(); err != nil {
+		return model, err
+	}
+
+	if model.ID != 0 {
+		return model, fmt.Errorf(errNoInsertHasPrimaryKey, "EntityHead")
+	}
+}
+
+// InsertEntityRoot inserts a new EntityRoot object into the database.
 func InsertEntityRoot(db common.DB, model models.EntityRoot) (models.EntityRoot, error) {
 	if err := model.Validate(); err != nil {
 		return model, err

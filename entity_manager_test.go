@@ -125,3 +125,28 @@ func TestCreate_SimpleAssociation(t *testing.T) {
 
 	assert.Equal(1, len(skus))
 }
+
+func TestFind(t *testing.T) {
+	assert := testutils.NewAssert(t)
+	log.SetLevel(log.DebugLevel)
+
+	db := testutils.InitDB(t)
+	defer db.Close()
+
+	view := models.CreateView(t, db)
+	product := Product{Title: "Fox Socks"}
+
+	mgr := NewEntityManager(db)
+	created, err := mgr.Create(&product, view.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var findProduct Product
+	if err := mgr.Find(created.Identifier(), view.ID, &findProduct); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	assert.Equal("Fox Socks", findProduct.Title)
+}

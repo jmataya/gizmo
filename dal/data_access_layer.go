@@ -16,6 +16,11 @@ func NewDataAccessLayer(db common.DB) *DataAccessLayer {
 	return &DataAccessLayer{db: db}
 }
 
+func (d *DataAccessLayer) ValidateInsert(model Model) {
+	if err := model.Validate(); err != n
+	d.err = model.Validate()
+}
+
 func (d *DataAccessLayer) Query(query string, args ...interface{}) *sql.Row {
 	stmt := d.prepare(query)
 	return d.stmtQueryRow(stmt, args...)
