@@ -9,8 +9,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/FoxComm/gizmo/dal"
-	"github.com/FoxComm/gizmo/models"
+	"github.com/jmataya/gizmo/dal"
+	"github.com/jmataya/gizmo/models"
 	"github.com/gedex/inflector"
 	_ "github.com/lib/pq" // Needed to allow database/sql to use Postgres.
 	log "github.com/sirupsen/logrus"

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/FoxComm/gizmo/common"
+	"github.com/jmataya/gizmo/common"
 )
 
 type DataAccessLayer struct {

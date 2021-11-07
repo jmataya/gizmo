@@ -10,7 +10,7 @@ header = $(call baseheader, $(1), gizmo)
 docs:
 	$(call header, Starting Docs Server)
 	godoc -http=:6060 &
-	echo 'View documentation: http://localhost:6060/pkg/github.com/FoxComm/gizmo'
+	echo 'View documentation: http://localhost:6060/pkg/github.com/jmataya/gizmo'
 
 info-test:
 	$(call header, Testing)

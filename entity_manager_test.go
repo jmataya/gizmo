@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/FoxComm/gizmo/models"
-	"github.com/FoxComm/gizmo/testutils"
+	"github.com/jmataya/gizmo/models"
+	"github.com/jmataya/gizmo/testutils"
 
 	log "github.com/sirupsen/logrus"
 )

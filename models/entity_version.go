@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/FoxComm/gizmo/common"
+	"github.com/jmataya/gizmo/common"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/FoxComm/gizmo/common"
-	"github.com/FoxComm/gizmo/models"
+	"github.com/jmataya/gizmo/common"
+	"github.com/jmataya/gizmo/models"
 )
 
 const (

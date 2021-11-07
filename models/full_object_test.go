@@ -3,7 +3,7 @@ package models
 import (
 	"testing"
 
-	"github.com/FoxComm/gizmo/testutils"
+	"github.com/jmataya/gizmo/testutils"
 )
 
 func TestFind_Basic(t *testing.T) {

@@ -10,7 +10,7 @@ situations and is automatically versioned on every change.
 1. Download and install it:
 
     ```sh
-    $ go get github.com/FoxComm/gizmo
+    $ go get github.com/jmataya/gizmo
     ```
 
 1. Run the database migrations:
@@ -22,7 +22,7 @@ situations and is automatically versioned on every change.
 1. Import gizmo to your code:
 
     ```go
-    import "github.com/FoxComm/gizmo"
+    import "github.com/jmataya/gizmo"
     ```
 
 1. Add `gizmo.EntityObject` to the struct you want to save:
